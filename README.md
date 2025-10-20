@@ -57,10 +57,10 @@ Run tests via Test Explorer in Visual Studio or use `dotnet test`.
 
 ## Data Source
 
-Provider: SMHI (Swedish Meteorological and Hydrological Institute)
+**Provider:** SMHI (Swedish Meteorological and Hydrological Institute)
 
-Base URL: https://opendata-download-metobs.smhi.se/api/version/1.0
+**Base URL:** https://opendata-download-metobs.smhi.se/api/version/1.0
 
-Parameters: Temperature (ID: 1), Wind Gust (ID: 21)
+**Parameters:** Temperature (ID: 1), Wind Gust (ID: 21)
 
-More info: https://opendata.smhi.se/metobs/resources/parameter
+**More info about parameters:** https://opendata.smhi.se/metobs/resources/parameter
