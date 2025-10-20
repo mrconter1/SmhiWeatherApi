@@ -31,24 +31,13 @@ namespace SmhiWeatherApi.Services
         {
             try
             {
-                var options = new JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
-                };
-
                 // Fetch temperature data
-                var tempUrl = $"{SmhiBaseUrl}/parameter/{TemperatureParameter}/station/{stationId}/period/latest-hour/data.json";
-                var tempResponse = await _httpClient.GetAsync(tempUrl);
-                tempResponse.EnsureSuccessStatusCode();
-                var tempJson = await tempResponse.Content.ReadAsStringAsync();
-                var tempData = JsonSerializer.Deserialize<SmhiResponse>(tempJson, options);
+                var tempUrl = BuildStationUrl(TemperatureParameter, stationId);
+                var tempData = await FetchAndDeserializeAsync<SmhiResponse>(tempUrl);
 
                 // Fetch wind gust data
-                var windUrl = $"{SmhiBaseUrl}/parameter/{WindGustParameter}/station/{stationId}/period/latest-hour/data.json";
-                var windResponse = await _httpClient.GetAsync(windUrl);
-                windResponse.EnsureSuccessStatusCode();
-                var windJson = await windResponse.Content.ReadAsStringAsync();
-                var windData = JsonSerializer.Deserialize<SmhiResponse>(windJson, options);
+                var windUrl = BuildStationUrl(WindGustParameter, stationId);
+                var windData = await FetchAndDeserializeAsync<SmhiResponse>(windUrl);
 
                 // Validate we got what we need
                 if (tempData == null || tempData.Value == null || !tempData.Value.Any() ||
@@ -59,11 +48,12 @@ namespace SmhiWeatherApi.Services
                 }
 
                 // After this point, we KNOW these are not null
+                // Extract to local variables to make it clear
                 var tempValue = tempData.Value.First();
                 var windValue = windData.Value.First();
 
-                var temperature = double.Parse(tempValue.Value, CultureInfo.InvariantCulture);
-                var windGust = double.Parse(windValue.Value, CultureInfo.InvariantCulture);
+                var temperature = ParseSmhiValue(tempValue.Value);
+                var windGust = ParseSmhiValue(windValue.Value);
                 var timestamp = ConvertUnixTimestamp(tempValue.Date);
 
                 var stationReading = new StationReading
@@ -90,28 +80,52 @@ namespace SmhiWeatherApi.Services
             return dateTime;
         }
 
+        private async Task<T?> FetchAndDeserializeAsync<T>(string url)
+        {
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true 
+            };
+
+            try
+            {
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<T>(json, options);
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+        private string BuildStationUrl(int parameter, string stationId)
+        {
+            return $"{SmhiBaseUrl}/parameter/{parameter}/station/{stationId}/period/latest-hour/data.json";
+        }
+
+        private string BuildStationSetUrl(int parameter)
+        {
+            return $"{SmhiBaseUrl}/parameter/{parameter}/station-set/all/period/latest-hour/data.json";
+        }
+
+        private double ParseSmhiValue(string? value)
+        {
+            return double.Parse(value!, CultureInfo.InvariantCulture);
+        }
+
         public async Task<List<StationReading>> GetAllStationsReadingAsync()
         {
             try
             {
-                var options = new JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
-                };
-
                 // Fetch all stations temperature data
-                var tempUrl = $"{SmhiBaseUrl}/parameter/{TemperatureParameter}/station-set/all/period/latest-hour/data.json";
-                var tempResponse = await _httpClient.GetAsync(tempUrl);
-                tempResponse.EnsureSuccessStatusCode();
-                var tempJson = await tempResponse.Content.ReadAsStringAsync();
-                var tempData = JsonSerializer.Deserialize<SmhiStationSetResponse>(tempJson, options);
+                var tempUrl = BuildStationSetUrl(TemperatureParameter);
+                var tempData = await FetchAndDeserializeAsync<SmhiStationSetResponse>(tempUrl);
 
                 // Fetch all stations wind gust data
-                var windUrl = $"{SmhiBaseUrl}/parameter/{WindGustParameter}/station-set/all/period/latest-hour/data.json";
-                var windResponse = await _httpClient.GetAsync(windUrl);
-                windResponse.EnsureSuccessStatusCode();
-                var windJson = await windResponse.Content.ReadAsStringAsync();
-                var windData = JsonSerializer.Deserialize<SmhiStationSetResponse>(windJson, options);
+                var windUrl = BuildStationSetUrl(WindGustParameter);
+                var windData = await FetchAndDeserializeAsync<SmhiStationSetResponse>(windUrl);
 
                 // Validate we got data
                 if (tempData?.Station == null || !tempData.Station.Any() ||
@@ -143,8 +157,8 @@ namespace SmhiWeatherApi.Services
                     var tempValue = tempStation.Value.First();
                     var windValue = windStation.Value!.First();
 
-                    var temperature = double.Parse(tempValue.Value, CultureInfo.InvariantCulture);
-                    var windGust = double.Parse(windValue.Value, CultureInfo.InvariantCulture);
+                    var temperature = ParseSmhiValue(tempValue.Value);
+                    var windGust = ParseSmhiValue(windValue.Value);
                     var timestamp = ConvertUnixTimestamp(tempValue.Date);
 
                     var stationReading = new StationReading
