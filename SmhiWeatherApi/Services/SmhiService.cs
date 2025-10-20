@@ -165,8 +165,8 @@ namespace SmhiWeatherApi.Services
 
                 // Create a dictionary for wind data by station key for quick lookup
                 var windByStation = windData.Station
-                    .Where(s => s.Value != null && s.Value.Any())
-                    .ToDictionary(s => s.Key, s => s);
+                    .Where(s => s.Key != null && s.Value != null && s.Value.Any())
+                    .ToDictionary(s => s.Key!, s => s);
 
                 // Map temperature and wind data for stations that have both
                 var stationReadings = new List<StationReading>();
@@ -175,6 +175,10 @@ namespace SmhiWeatherApi.Services
                 {
                     // Only process if temperature has values
                     if (tempStation.Value == null || !tempStation.Value.Any())
+                        continue;
+
+                    // Skip if station key is null
+                    if (tempStation.Key == null)
                         continue;
 
                     // Check if this station also has wind data
