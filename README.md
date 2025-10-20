@@ -33,11 +33,11 @@ GET /api/stations/159880?period=day   # latest day (~24 readings)
 
 ## Key Features
 
-Timestamp validation: When combining temperature and wind measurements, timestamps are compared. If they differ, a warning is logged with the millisecond difference and the latest timestamp is used.
+**Timestamp validation:** When combining temperature and wind measurements, timestamps are compared. If they differ, a warning is logged with the millisecond difference and the latest timestamp is used.
 
-API key authentication: All endpoints secured with API key validation. Swagger/Swagger UI automatically included without auth.
+**API key authentication:** All endpoints secured with API key validation. Swagger/Swagger UI automatically included without auth.
 
-Error handling: Invalid or missing data returns an empty list. All errors are logged with context.
+**Error handling:** Invalid or missing data returns an empty list. All errors are logged with context.
 
 ## Testing
 
@@ -58,6 +58,9 @@ Run tests via Test Explorer in Visual Studio or use `dotnet test`.
 ## Data Source
 
 Provider: SMHI (Swedish Meteorological and Hydrological Institute)
+
 Base URL: https://opendata-download-metobs.smhi.se/api/version/1.0
+
 Parameters: Temperature (ID: 1), Wind Gust (ID: 21)
+
 More info: https://opendata.smhi.se/metobs/resources/parameter
