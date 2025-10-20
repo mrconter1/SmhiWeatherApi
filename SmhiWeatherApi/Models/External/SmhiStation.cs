@@ -12,6 +12,6 @@ namespace SmhiWeatherApi.Models.External
 
         public string? MeasuringStations { get; set; }
 
-        public int Height { get; set; }
+        public double Height { get; set; }
     }
 }
