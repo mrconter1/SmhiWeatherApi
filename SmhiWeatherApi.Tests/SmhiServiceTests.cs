@@ -49,6 +49,7 @@ namespace SmhiWeatherApi.Tests
         }
 
         [Fact]
+        // Tests the merging of temperature and wind data for a single station
         public async Task GetStationReadingAsync_ValidResponse_ReturnsStationReading()
         {
             // Arrange
@@ -93,6 +94,8 @@ namespace SmhiWeatherApi.Tests
         }
 
         [Fact]
+        // Respond to GetStationReadingAsync with an error from the SMHI API
+        // Expects an empty list to be returned
         public async Task GetStationReadingAsync_ApiReturnsError_ReturnsEmptyList()
         {
             // Arrange
@@ -118,6 +121,8 @@ namespace SmhiWeatherApi.Tests
         }
 
         [Fact]
+        // Respond to GetStationReadingAsync with an empty response from the SMHI API
+        // Expects an empty list to be returned
         public async Task GetStationReadingAsync_NoDataAvailable_ReturnsEmptyList()
         {
             // Arrange
