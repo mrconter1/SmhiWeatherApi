@@ -7,7 +7,7 @@ namespace SmhiWeatherApi.Services
 {
     public interface ISmhiService
     {
-        Task<StationReading?> GetStationReadingAsync(string stationId);
+        Task<List<StationReading>> GetStationReadingAsync(string stationId, string? period = "hour");
         Task<List<StationReading>> GetAllStationsReadingAsync();
     }
 
@@ -27,16 +27,16 @@ namespace SmhiWeatherApi.Services
             _logger = logger;
         }
 
-        public async Task<StationReading?> GetStationReadingAsync(string stationId)
+        public async Task<List<StationReading>> GetStationReadingAsync(string stationId, string? period = "hour")
         {
             try
             {
                 // Fetch temperature data
-                var tempUrl = BuildStationUrl(TemperatureParameter, stationId);
+                var tempUrl = BuildStationUrl(TemperatureParameter, stationId, period ?? "hour");
                 var tempData = await FetchAndDeserializeAsync<SmhiResponse>(tempUrl);
 
                 // Fetch wind gust data
-                var windUrl = BuildStationUrl(WindGustParameter, stationId);
+                var windUrl = BuildStationUrl(WindGustParameter, stationId, period ?? "hour");
                 var windData = await FetchAndDeserializeAsync<SmhiResponse>(windUrl);
 
                 // Validate we got what we need
@@ -44,32 +44,46 @@ namespace SmhiWeatherApi.Services
                     windData == null || windData.Value == null || !windData.Value.Any())
                 {
                     _logger.LogWarning("Invalid response from SMHI for station {StationId}", stationId);
-                    return null;
+                    return new List<StationReading>();
                 }
 
-                // After this point, we KNOW these are not null
-                // Extract to local variables to make it clear
-                var tempValue = tempData.Value.First();
-                var windValue = windData.Value.First();
+                // Create a dictionary for wind data by timestamp for quick lookup
+                var windByTimestamp = windData.Value
+                    .ToDictionary(v => v.Date, v => v);
 
-                var temperature = ParseSmhiValue(tempValue.Value);
-                var windGust = ParseSmhiValue(windValue.Value);
-                var timestamp = ConvertUnixTimestamp(tempValue.Date);
+                var stationReadings = new List<StationReading>();
 
-                var stationReading = new StationReading
+                // Process each temperature reading
+                foreach (var tempValue in tempData.Value)
                 {
-                    StationId = int.Parse(stationId),
-                    Temperature = temperature,
-                    WindGust = windGust,
-                    Timestamp = timestamp
-                };
+                    // Check if this timestamp also has wind data
+                    if (!windByTimestamp.TryGetValue(tempValue.Date, out var windValue))
+                        continue;
 
-                return stationReading;
+                    var temperature = ParseSmhiValue(tempValue.Value);
+                    var windGust = ParseSmhiValue(windValue.Value);
+                    var timestamp = ConvertUnixTimestamp(tempValue.Date);
+
+                    var stationReading = new StationReading
+                    {
+                        StationId = int.Parse(stationId),
+                        Temperature = temperature,
+                        WindGust = windGust,
+                        Timestamp = timestamp
+                    };
+
+                    stationReadings.Add(stationReading);
+                }
+
+                _logger.LogInformation("Retrieved {Count} readings for station {StationId} ({Period})", 
+                    stationReadings.Count, stationId, period ?? "hour");
+                
+                return stationReadings;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching data for station {StationId}", stationId);
-                return null;
+                return new List<StationReading>();
             }
         }
 
@@ -101,9 +115,10 @@ namespace SmhiWeatherApi.Services
             }
         }
 
-        private string BuildStationUrl(int parameter, string stationId)
+        private string BuildStationUrl(int parameter, string stationId, string period)
         {
-            return $"{SmhiBaseUrl}/parameter/{parameter}/station/{stationId}/period/latest-hour/data.json";
+            var periodPath = period?.ToLower() == "day" ? "latest-day" : "latest-hour";
+            return $"{SmhiBaseUrl}/parameter/{parameter}/station/{stationId}/period/{periodPath}/data.json";
         }
 
         private string BuildStationSetUrl(int parameter)

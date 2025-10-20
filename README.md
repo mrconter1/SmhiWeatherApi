@@ -34,18 +34,31 @@ Returns a list of **all stations with both temperature and wind gust data** for 
 GET /api/stations/{stationId}
 ```
 
-Returns temperature and wind gust data for a specific station (latest hour).
+Returns temperature and wind gust data for a specific station. Supports `hour` (default) and `day` periods.
 
-**Example:** `GET /api/stations/159880`
+**Query Parameter:** `?period={hour|day}`
+```
+hour (default) - ~1 reading from latest hour
+day            - ~24 readings from latest day (limited station support)
+```
 
-**Response:**
+**Examples:**
+```
+GET /api/stations/159880?period=hour        # latest hour (~1 reading)
+GET /api/stations/159880?period=day         # latest day (~24 readings, if available)
+GET /api/stations/159880                    # defaults to period=hour
+```
+
+**Response (array of readings):**
 ```json
-{
-  "stationId": 159880,
-  "temperature": -0.7,
-  "windGust": 2.1,
-  "timestamp": "2024-10-20T12:00:00"
-}
+[
+  {
+    "stationId": 159880,
+    "temperature": -0.7,
+    "windGust": 2.1,
+    "timestamp": "2024-10-20T12:00:00"
+  }
+]
 ```
 
 ## Data Source
@@ -55,7 +68,6 @@ Returns temperature and wind gust data for a specific station (latest hour).
 - **Parameters:**
   - Temperature (ID: 1) - Celsius
   - Wind Gust (ID: 21) - Meters per second
-- **Period:** Latest hour data
 - **Parameter Info:** https://opendata.smhi.se/metobs/resources/parameter
 
 ## Project Structure
@@ -78,6 +90,6 @@ SmhiWeatherApi/
 
 ## Error Handling
 
-- Invalid/missing data returns empty list or null
+- Invalid/missing data returns empty list
 - Errors are logged with detailed context
 - API returns HTTP 400 for failed requests
