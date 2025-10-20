@@ -1,112 +1,63 @@
 # SMHI Weather API
 
-A simple API that allows for intuitive fetching of temperature and wind gust data from SMHI.
+A .NET 8 API for fetching real-time temperature and wind gust data from Swedish meteorological stations (SMHI).
+
+## Quick Start
+
+All endpoints require `X-API-Key` header. Dev keys: `solita-ai-1`, `solita-development`
+
+In Swagger UI, click 🔒 Authorize at the top and enter a key.
 
 ## Endpoints
 
-The API provides two endpoints for retrieving weather station data:
+### GET /api/stations
+Returns all stations with temperature and wind data for the latest hour. Only returns stations with both measurements.
 
-### 1. Get All Stations
-
-```
-GET /api/stations
-```
-
-Returns a list of **all stations with both temperature and wind gust data** for the latest hour.
-
-**Important:** Only stations that have values for both temperature (parameter 1) and wind gust (parameter 21) are included in the response. Stations missing either value are filtered out.
-
-**Response:**
+Example response:
 ```json
-[
-  {
-    "stationId": 159880,
-    "temperature": -0.7,
-    "windGust": 2.1,
-    "timestamp": "2024-10-20T12:00:00"
-  }
-]
+[{
+  "stationId": 159880,
+  "temperature": -0.7,
+  "windGust": 2.1,
+  "timestamp": "2024-10-20T12:00:00"
+}]
 ```
 
-### 2. Get Specific Station
+### GET /api/stations/{stationId}
+Returns data for a specific station. Supports `period` query parameter: `hour` (default) or `day`.
 
 ```
-GET /api/stations/{stationId}
+GET /api/stations/159880              # latest hour
+GET /api/stations/159880?period=day   # latest day (~24 readings)
 ```
 
-Returns temperature and wind gust data for a specific station. Supports `hour` (default) and `day` periods.
+## Key Features
 
-**Query Parameter:** `?period={hour|day}`
-```
-hour (default) - ~1 reading from latest hour
-day            - ~24 readings from latest day (limited station support)
-```
+Timestamp validation: When combining temperature and wind measurements, timestamps are compared. If they differ, a warning is logged with the millisecond difference and the latest timestamp is used.
 
-**Examples:**
-```
-GET /api/stations/159880?period=hour        # latest hour (~1 reading)
-GET /api/stations/159880?period=day         # latest day (~24 readings, if available)
-GET /api/stations/159880                    # defaults to period=hour
-```
+API key authentication: All endpoints secured with API key validation. Swagger/Swagger UI automatically included without auth.
 
-**Response (array of readings):**
-```json
-[
-  {
-    "stationId": 159880,
-    "temperature": -0.7,
-    "windGust": 2.1,
-    "timestamp": "2024-10-20T12:00:00"
-  }
-]
-```
+Error handling: Invalid or missing data returns an empty list. All errors are logged with context.
 
-## Authentication
+## Testing
 
-All endpoints require `X-API-Key` header.
+The project includes a comprehensive test suite in `SmhiWeatherApi.Tests` using xUnit and Moq. Tests cover happy path, error handling, and empty data scenarios.
 
-**Dev Keys:** `solita-ai-1`, `solita-development`
+Run tests via Test Explorer in Visual Studio or use `dotnet test`.
 
-Swagger: Click 🔒 Authorize at top, enter key.
+## Architecture
+
+**Services** - `SmhiService` handles API integration, data fetching, and timestamp comparison logic
+
+**Controllers** - `StationsController` exposes REST endpoints
+
+**Middleware** - `ApiKeyMiddleware` validates API keys on all requests (except Swagger)
+
+**Models** - DTOs for external SMHI responses and internal `StationReading` model
 
 ## Data Source
 
-- **Provider:** SMHI (Swedish Meteorological and Hydrological Institute)
-- **API Version:** 1.0
-- **Base URL:** https://opendata-download-metobs.smhi.se/api/version/1.0
-- **Parameters:**
-  - Temperature (ID: 1) - Celsius
-  - Wind Gust (ID: 21) - Meters per second
-- **Parameter Info:** https://opendata.smhi.se/metobs/resources/parameter
-
-## Data Handling
-
-**Timestamp Comparison:** When combining temperature and wind data for the same station, timestamps are compared. If they differ:
-- A warning is logged with the station ID and millisecond difference
-- The **latest timestamp** is used in the response
-
-This ensures consistency when the external API returns data with slightly different measurement times.
-
-## Project Structure
-
-```
-SmhiWeatherApi/
-├── Controllers/
-│   └── StationsController.cs          # API endpoints
-├── Services/
-│   └── SmhiService.cs                 # SMHI API integration
-├── Models/
-│   ├── StationReading.cs              # Response model
-│   └── External/
-│       ├── SmhiResponse.cs            # Single station response deserialization
-│       ├── SmhiStationSetResponse.cs  # All stations response deserialization
-│       ├── SmhiValue.cs               # Measurement value
-│       └── SmhiStation.cs             # Station metadata
-└── Program.cs                          # Configuration & DI setup
-```
-
-## Error Handling
-
-- Invalid/missing data returns empty list
-- Errors are logged with detailed context
-- API returns HTTP 400 for failed requests
+Provider: SMHI (Swedish Meteorological and Hydrological Institute)
+Base URL: https://opendata-download-metobs.smhi.se/api/version/1.0
+Parameters: Temperature (ID: 1), Wind Gust (ID: 21)
+More info: https://opendata.smhi.se/metobs/resources/parameter
