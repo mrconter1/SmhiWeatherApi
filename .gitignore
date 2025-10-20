@@ -1,3 +1,5 @@
 /.vs
 SmhiWeatherApi/obj/*
 SmhiWeatherApi/bin/*
+SmhiWeatherApi.Tests/obj/*
+SmhiWeatherApi.Tests/bin/*
