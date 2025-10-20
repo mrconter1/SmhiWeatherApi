@@ -28,5 +28,12 @@ namespace SmhiWeatherApi.Controllers
 
             return Ok(stationReading);
         }
+
+        [HttpGet("stations")]
+        public async Task<ActionResult> GetAllStations()
+        {
+            var stationReadings = await _smhiService.GetAllStationsReadingAsync();
+            return Ok(stationReadings);
+        }
     }
 }
