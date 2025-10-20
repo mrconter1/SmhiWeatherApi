@@ -64,7 +64,8 @@ GET /api/stations/159880                    # defaults to period=hour
 ## Data Source
 
 - **Provider:** SMHI (Swedish Meteorological and Hydrological Institute)
-- **Base URL:** https://opendata-download-metobs.smhi.se/api/version/latest
+- **API Version:** 1.0
+- **Base URL:** https://opendata-download-metobs.smhi.se/api/version/1.0
 - **Parameters:**
   - Temperature (ID: 1) - Celsius
   - Wind Gust (ID: 21) - Meters per second

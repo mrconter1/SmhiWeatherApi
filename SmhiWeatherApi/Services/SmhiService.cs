@@ -15,7 +15,7 @@ namespace SmhiWeatherApi.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<SmhiService> _logger;
-        private const string SmhiBaseUrl = "https://opendata-download-metobs.smhi.se/api/version/latest";
+        private const string SmhiBaseUrl = "https://opendata-download-metobs.smhi.se/api/version/1.0";
         
         // Parameter IDs - see https://opendata.smhi.se/metobs/resources/parameter for available parameters
         private const int TemperatureParameter = 1;
