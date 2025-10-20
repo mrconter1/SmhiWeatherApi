@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36518.9 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmhiWeatherApi", "SmhiWeatherApi\SmhiWeatherApi.csproj", "{0CCEB166-00F0-433C-AC72-FFF5B2D60080}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmhiWeatherApi.Tests", "SmhiWeatherApi.Tests\SmhiWeatherApi.Tests.csproj", "{D48FDF9E-11AF-4C95-8D3B-545CFA121D89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0CCEB166-00F0-433C-AC72-FFF5B2D60080}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CCEB166-00F0-433C-AC72-FFF5B2D60080}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CCEB166-00F0-433C-AC72-FFF5B2D60080}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D48FDF9E-11AF-4C95-8D3B-545CFA121D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D48FDF9E-11AF-4C95-8D3B-545CFA121D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D48FDF9E-11AF-4C95-8D3B-545CFA121D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D48FDF9E-11AF-4C95-8D3B-545CFA121D89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
