@@ -7,12 +7,10 @@ namespace SmhiWeatherApi.Controllers
     [Route("api")]
     public class StationsController : ControllerBase
     {
-        private readonly ILogger<StationsController> _logger;
         private readonly ISmhiService _smhiService;
 
-        public StationsController(ILogger<StationsController> logger, ISmhiService smhiService)
+        public StationsController(ISmhiService smhiService)
         {
-            _logger = logger;
             _smhiService = smhiService;
         }
 
@@ -27,13 +25,12 @@ namespace SmhiWeatherApi.Controllers
             [FromRoute] string stationId = "159880", 
             [FromQuery] string? period = "hour")
         {
-            var stationReadings = await _smhiService.GetStationReadingAsync(stationId, period);
-            
-            if (!stationReadings.Any())
+            if (string.IsNullOrWhiteSpace(stationId))
             {
-                return BadRequest("Failed to retrieve station data from SMHI API");
+                return BadRequest("Station ID cannot be empty");
             }
 
+            var stationReadings = await _smhiService.GetStationReadingAsync(stationId, period);
             return Ok(stationReadings);
         }
 
