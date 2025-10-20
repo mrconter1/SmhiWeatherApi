@@ -94,8 +94,9 @@ namespace SmhiWeatherApi.Services
                 var json = await response.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<T>(json, options);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to fetch data from {Url}", url);
                 return default;
             }
         }
