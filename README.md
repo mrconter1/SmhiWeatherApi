@@ -55,6 +55,18 @@ Run tests via Test Explorer in Visual Studio or use `dotnet test`.
 
 **Models** - DTOs for external SMHI responses and internal `StationReading` model
 
+## Shortcuts & Trade-offs
+
+- **Sequential HTTP calls** Could parallelize with `Task.WhenAll()` but minimal impact with only 2 API calls
+- **Single timestamp per reading** Simpler API contract, separate timestamps would require client logic to handle mismatches
+- **Skips stations missing either parameter** Returns consistent, complete datasets; partial data complicates client consumption
+- **No caching** Not needed for demonstration, would add complexity without clear requirements
+- **No pagination on all-stations** Dataset is manageable (~200-400 stations), unnecessary complexity at this scale
+- **Quality field ignored** No client requirements defined for quality thresholds, should discuss with stakeholder first
+- **Inconsistent error responses** Single-station returns 400 on empty; all-stations returns 200. Works but inconsistent design
+- **Limited test coverage** Only service layer tested, controller/middleware testing would require more mock setup time
+- **No retry/rate limiting** Depends on actual usage and SMHI API limits, needs production monitoring to justify
+
 ## Data Source
 
 **Provider:** SMHI (Swedish Meteorological and Hydrological Institute)
