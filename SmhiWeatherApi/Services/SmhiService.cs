@@ -62,7 +62,8 @@ namespace SmhiWeatherApi.Services
 
                     var temperature = ParseSmhiValue(tempValue.Value);
                     var windGust = ParseSmhiValue(windValue.Value);
-                    var timestamp = ConvertUnixTimestamp(tempValue.Date);
+                    var latestTimestamp = GetLatestTimestamp(tempValue, windValue, stationId);
+                    var timestamp = ConvertUnixTimestamp(latestTimestamp);
 
                     var stationReading = new StationReading
                     {
@@ -92,6 +93,17 @@ namespace SmhiWeatherApi.Services
             var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dateTime = dateTime.AddMilliseconds(timestamp).ToLocalTime();
             return dateTime;
+        }
+
+        private long GetLatestTimestamp(SmhiValue tempValue, SmhiValue windValue, string stationId)
+        {
+            if (tempValue.Date != windValue.Date)
+            {
+                _logger.LogWarning(
+                    "Timestamp mismatch for station {StationId}: temp={TempTime}, wind={WindTime}, diff={DiffMs}ms",
+                    stationId, tempValue.Date, windValue.Date, Math.Abs(tempValue.Date - windValue.Date));
+            }
+            return Math.Max(tempValue.Date, windValue.Date);
         }
 
         private async Task<T?> FetchAndDeserializeAsync<T>(string url)
@@ -175,7 +187,8 @@ namespace SmhiWeatherApi.Services
 
                     var temperature = ParseSmhiValue(tempValue.Value);
                     var windGust = ParseSmhiValue(windValue.Value);
-                    var timestamp = ConvertUnixTimestamp(tempValue.Date);
+                    var latestTimestamp = GetLatestTimestamp(tempValue, windValue, tempStation.Key!);
+                    var timestamp = ConvertUnixTimestamp(latestTimestamp);
 
                     var stationReading = new StationReading
                     {

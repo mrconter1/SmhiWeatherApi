@@ -71,6 +71,14 @@ GET /api/stations/159880                    # defaults to period=hour
   - Wind Gust (ID: 21) - Meters per second
 - **Parameter Info:** https://opendata.smhi.se/metobs/resources/parameter
 
+## Data Handling
+
+**Timestamp Comparison:** When combining temperature and wind data for the same station, timestamps are compared. If they differ:
+- A warning is logged with the station ID and millisecond difference
+- The **latest timestamp** is used in the response
+
+This ensures consistency when the external API returns data with slightly different measurement times.
+
 ## Project Structure
 
 ```
