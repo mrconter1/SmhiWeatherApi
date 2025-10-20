@@ -61,6 +61,14 @@ GET /api/stations/159880                    # defaults to period=hour
 ]
 ```
 
+## Authentication
+
+All endpoints require `X-API-Key` header.
+
+**Dev Keys:** `solita-ai-1`, `solita-development`
+
+Swagger: Click 🔒 Authorize at top, enter key.
+
 ## Data Source
 
 - **Provider:** SMHI (Swedish Meteorological and Hydrological Institute)
